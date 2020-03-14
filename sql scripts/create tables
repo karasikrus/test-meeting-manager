@@ -1,0 +1,39 @@
+create table meeting
+(
+    id         bigserial                not null
+        constraint meeting_pk
+            primary key,
+    name       varchar(100)             not null,
+    start_time timestamp with time zone not null,
+    end_time   timestamp with time zone not null
+);
+
+create unique index meeting_id_uindex
+    on meeting (id);
+
+
+create table person
+(
+	name varchar(100) not null,
+	email varchar(100) not null
+);
+
+create unique index person_email_uindex
+	on person (email);
+
+alter table person
+	add constraint person_pk
+		primary key (email);
+
+create table participants
+(
+	meeting_id bigint
+		constraint participants_meeting_id_fk
+			references meeting
+				on delete cascade,
+	person_email varchar(100)
+		constraint participants_person_email_fk
+			references person
+				on delete cascade
+);
+
