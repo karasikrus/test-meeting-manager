@@ -15,6 +15,37 @@ const db = pgp(dbUrl.postgresUrl);
 router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
+
+router.post('/participants', function (req, res, next) {
+    if (!req.body.meetingId || !req.body.email) {
+        res.status(400).send('incorrect format');
+    } else {
+        let id = req.body.meetingId;
+        let email = req.body.email;
+        let name = req.body.name;
+        db.task(async t => {
+            let person = await t.oneOrNone('SELECT FROM person WHERE email = $1', email);
+            if (!person) {
+                try {
+                    await t.oneOrNone('INSERT INTO person(name, email) VALUES($1, $2)', [name, email]);
+                } catch (e) {
+                    console.log('no name for new person: ', e);
+                }
+            }
+            return t.oneOrNone('INSERT INTO participants(meeting_id, person_email) VALUES($1, $2)',
+                [id, email]);
+
+        })
+            .then(() => {
+                res.send('ok');
+            })
+            .catch((error) => {
+                console.log('error in adding participant to database: ', error);
+            })
+    }
+});
+
+
 router.delete('/participants', function (req, res, next) {
     if (!req.body.email || !req.body.meetingId) {
         res.status(400).send('incorrect format');
