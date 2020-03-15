@@ -16,6 +16,26 @@ router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
 
+router.delete('/meetings', function (req, res, next) {
+    console.log(req.body);
+    if(!req.body.id){
+        res.status(400).send('incorrect format');
+    }
+    let id = req.body.id;
+    db.result('DELETE FROM meeting WHERE id = $1', id)
+        .then(data => {
+            console.log(data.rowCount);
+            if (data.rowCount>0){
+                res.send('ok');
+            } else{
+                res.send('there is nothing to delete');
+            }
+        })
+        .catch(error =>{
+            console.log('error in deleting meeting from database: ', error);
+        })
+});
+
 router.get('/meetings', function (req, res, next) {
     db.task(async t => {
         // t.ctx = task config + state context;
