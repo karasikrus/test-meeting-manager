@@ -46,6 +46,7 @@ router.post('/participants', function (req, res, next) {
         const id = req.body.meetingId;
         const email = req.body.email;
         const name = req.body.name;
+        let intersections = [];
         db.task(async t => {
             let person = await t.oneOrNone('SELECT FROM person WHERE email = $1', email);
             if (!person) {
@@ -55,12 +56,25 @@ router.post('/participants', function (req, res, next) {
                     console.log('no name for new person: ', e);
                 }
             }
+            intersections = await t.result(
+                'SELECT id FROM meeting WHERE start_time <= (SELECT start_time FROM meeting WHERE id = $1) AND end_time > (SELECT start_time FROM meeting WHERE id = $1) AND id IN (SELECT meeting_id FROM participants WHERE person_email = $2) OR start_time >= (SELECT start_time FROM meeting WHERE id = $1) AND start_time < (SELECT end_time FROM meeting WHERE id = $1) AND id IN (SELECT meeting_id FROM participants WHERE person_email = $2)',
+                [id, email]);
+            intersections = intersections.rows;
             return t.oneOrNone('INSERT INTO participants(meeting_id, person_email) VALUES($1, $2)',
                 [id, email]);
 
         })
             .then(() => {
-                res.send('ok');
+                if (intersections) {
+                    res.send({
+                        "status": 'ok',
+                        "intersections": intersections
+                    });
+                } else {
+                    res.send({
+                        "status": 'ok'
+                    });
+                }
             })
             .catch((error) => {
                 console.log('error in adding participant to database: ', error);
