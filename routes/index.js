@@ -15,6 +15,28 @@ const db = pgp(dbUrl.postgresUrl);
 router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
+router.post('/meetings', function (req, res, next) {
+    if (!req.body.name || !req.body.start_time || !req.body.end_time) {
+        res.status(400).send('incorrect format');
+    } else {
+        let name = req.body.name;
+        let start_time = req.body.start_time;
+        let end_time = req.body.end_time;
+        if (end_time < start_time) {
+            res.status(400).send('end_time should not be less than start_time');
+        } else {
+            db.one(
+                'INSERT INTO meeting(name, start_time, end_time) VALUES($1, to_timestamp($2 / 1000.0), to_timestamp($3 / 1000.0)) RETURNING id',
+                [name, start_time, end_time])
+                .then((data) => {
+                    res.send(data);
+                })
+                .catch((error) => {
+                    console.log('error in adding participant to database: ', error);
+                })
+        }
+    }
+});
 
 router.post('/participants', function (req, res, next) {
     if (!req.body.meetingId || !req.body.email) {
