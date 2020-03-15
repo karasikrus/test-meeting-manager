@@ -41,11 +41,12 @@ deletes a meeting
 
 ### post
 adds participant to a meeting, if there were no participant, creates one
+if meeting time intersects with times of other meetings of the participant, returns their ids in an array
 ```
 {
-	"meetingId": "27",
-	"name": "jack",
-	"email": "jack@mail.io"
+	"meetingId": integer,
+	"name": string,
+	"email": valid email string
 }
 ```
 
@@ -53,7 +54,7 @@ adds participant to a meeting, if there were no participant, creates one
 removes participant from a meeting
 ```
 {
-    "email": "t@us.gov",
-    "meetingId": "6"
+    "email": valid email string,
+    "meetingId": integer
 }
 ```
