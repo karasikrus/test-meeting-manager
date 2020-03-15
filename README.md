@@ -15,6 +15,9 @@ use
 use 
 `npm test`
 
+## To change database
+modify `/config/dbConfig.json`
+
 # API
 ## /meetings
 ### get
