@@ -40,10 +40,12 @@ router.post('/meetings', function (req, res, next) {
 router.post('/participants', function (req, res, next) {
     if (!req.body.meetingId || !req.body.email) {
         res.status(400).send('incorrect format');
+    } else if (!validateEmail(req.body.email)) {
+        res.status(400).send('incorrect email');
     } else {
-        let id = req.body.meetingId;
-        let email = req.body.email;
-        let name = req.body.name;
+        const id = req.body.meetingId;
+        const email = req.body.email;
+        const name = req.body.name;
         db.task(async t => {
             let person = await t.oneOrNone('SELECT FROM person WHERE email = $1', email);
             if (!person) {
@@ -138,5 +140,11 @@ router.get('/meetings', function (req, res, next) {
             console.log('error in getting participants from database: ', error)// error
         });
 });
+
+
+function validateEmail(string) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(string).toLowerCase());
+}
 
 module.exports = router;
