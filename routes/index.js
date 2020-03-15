@@ -15,25 +15,46 @@ const db = pgp(dbUrl.postgresUrl);
 router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
+router.delete('/participants', function (req, res, next) {
+    if (!req.body.email || !req.body.meetingId) {
+        res.status(400).send('incorrect format');
+    } else {
+        let email = req.body.email;
+        let id = req.body.meetingId;
+        db.result('DELETE FROM participants WHERE meeting_id = $1 AND person_email = $2', [id, email])
+            .then(data => {
+                console.log(data.rowCount);
+                if (data.rowCount > 0) {
+                    res.send('ok');
+                } else {
+                    res.send('there is nothing to delete');
+                }
+            })
+            .catch(error => {
+                console.log('error in deleting participant from database: ', error);
+            })
+    }
+});
 
 router.delete('/meetings', function (req, res, next) {
     console.log(req.body);
-    if(!req.body.id){
+    if (!req.body.id) {
         res.status(400).send('incorrect format');
+    } else {
+        let id = req.body.id;
+        db.result('DELETE FROM meeting WHERE id = $1', id)
+            .then(data => {
+                console.log(data.rowCount);
+                if (data.rowCount > 0) {
+                    res.send('ok');
+                } else {
+                    res.send('there is nothing to delete');
+                }
+            })
+            .catch(error => {
+                console.log('error in deleting meeting from database: ', error);
+            })
     }
-    let id = req.body.id;
-    db.result('DELETE FROM meeting WHERE id = $1', id)
-        .then(data => {
-            console.log(data.rowCount);
-            if (data.rowCount>0){
-                res.send('ok');
-            } else{
-                res.send('there is nothing to delete');
-            }
-        })
-        .catch(error =>{
-            console.log('error in deleting meeting from database: ', error);
-        })
 });
 
 router.get('/meetings', function (req, res, next) {
